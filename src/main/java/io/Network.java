@@ -31,6 +31,14 @@ public class Network implements Closeable {
         os.flush();
     }
 
+    public int read(byte[] buffer) throws IOException {
+        return is.read(buffer);
+    }
+
+    public long readLong() throws IOException {
+        return is.readLong();
+    }
+
     public String read() throws IOException {
         return is.readUTF();
     }

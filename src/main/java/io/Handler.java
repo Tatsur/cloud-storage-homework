@@ -3,20 +3,24 @@ package io;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
 public class Handler implements Runnable {
 
+    private static final int BUFFER_SIZE = 1024;
     private final IoFileCommandServer server;
     private final Socket socket;
     private String serverDir = "./";
     private String userName;
+    private final byte[] buffer;
 
     public Handler(IoFileCommandServer server, Socket socket) {
         this.server = server;
         this.socket = socket;
         userName = "user";
+        buffer = new byte[BUFFER_SIZE];
     }
 
     @Override
@@ -63,7 +67,27 @@ public class Handler implements Runnable {
                     os.writeUTF(message);
                     os.flush();
                     break;
-                } else {
+                } else if (message.startsWith("getFile")) {
+                    String[] data = message.split(" +");
+                    String fileName = data[1];
+                    File file = new File(serverDir + fileName);
+                    if (!file.exists()) {
+                        os.writeUTF("user: File not exists\n");
+                    } else {
+                        os.writeUTF("file");
+                        os.writeUTF(fileName);
+                        long length = file.length();
+                        os.writeLong(length);
+                        try (FileInputStream fis = new FileInputStream(serverDir + fileName)) {
+                            int read;
+                            while ((read = fis.read(buffer)) != -1) {
+                                os.write(buffer, 0 ,read);
+                            }
+                        }
+                    }
+                    os.flush();
+                }
+                else {
                     os.writeUTF("user: UNKNOWN COMMAND\n");
                     os.flush();
                 }

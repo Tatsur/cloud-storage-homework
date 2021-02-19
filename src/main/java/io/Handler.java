@@ -9,18 +9,15 @@ import java.net.Socket;
 
 public class Handler implements Runnable {
 
-    private static final int BUFFER_SIZE = 1024;
     private final IoFileCommandServer server;
     private final Socket socket;
     private String serverDir = "./";
     private String userName;
-    private final byte[] buffer;
 
     public Handler(IoFileCommandServer server, Socket socket) {
         this.server = server;
         this.socket = socket;
         userName = "user";
-        buffer = new byte[BUFFER_SIZE];
     }
 
     @Override
@@ -63,7 +60,8 @@ public class Handler implements Runnable {
                         os.writeUTF("user: wrong path\n");
                         os.flush();
                     }
-                } else if (message.equals("/quit")) {
+                }
+                else if (message.equals("/quit")) {
                     os.writeUTF(message);
                     os.flush();
                     break;

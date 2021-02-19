@@ -13,11 +13,15 @@ public class Handler implements Runnable {
     private final Socket socket;
     private String serverDir = "./";
     private String userName;
+    private static final int BUFFER_SIZE = 2048;
+    private final byte[] buffer;
+
 
     public Handler(IoFileCommandServer server, Socket socket) {
         this.server = server;
         this.socket = socket;
         userName = "user";
+        buffer = new byte[BUFFER_SIZE];
     }
 
     @Override
@@ -60,6 +64,25 @@ public class Handler implements Runnable {
                         os.writeUTF("user: wrong path\n");
                         os.flush();
                     }
+                }else if (message.startsWith("get")) {
+                    String[] data = message.split(" +");
+                    String fileName = data[1];
+                    File file = new File(serverDir + fileName);
+                    if (!file.exists()) {
+                        os.writeUTF("user: File does not exists\n");
+                    } else {
+                        os.writeUTF("file");
+                        os.writeUTF(fileName);
+                        long fileLength = file.length();
+                        os.writeLong(fileLength);
+                        try (FileInputStream fis = new FileInputStream(serverDir + fileName)) {
+                            int read;
+                            while ((read = fis.read(buffer)) != -1) {
+                                os.write(buffer, 0 ,read);
+                            }
+                        }
+                    }
+                    os.flush();
                 }
                 else if (message.equals("/quit")) {
                     os.writeUTF(message);

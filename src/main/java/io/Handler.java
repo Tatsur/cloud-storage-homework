@@ -67,25 +67,6 @@ public class Handler implements Runnable {
                     os.writeUTF(message);
                     os.flush();
                     break;
-                } else if (message.startsWith("getFile")) {
-                    String[] data = message.split(" +");
-                    String fileName = data[1];
-                    File file = new File(serverDir + fileName);
-                    if (!file.exists()) {
-                        os.writeUTF("user: File not exists\n");
-                    } else {
-                        os.writeUTF("file");
-                        os.writeUTF(fileName);
-                        long length = file.length();
-                        os.writeLong(length);
-                        try (FileInputStream fis = new FileInputStream(serverDir + fileName)) {
-                            int read;
-                            while ((read = fis.read(buffer)) != -1) {
-                                os.write(buffer, 0 ,read);
-                            }
-                        }
-                    }
-                    os.flush();
                 }
                 else {
                     os.writeUTF("user: UNKNOWN COMMAND\n");
